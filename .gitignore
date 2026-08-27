@@ -1,0 +1,4 @@
+.env
+.venv/
+health.db
+__pycache__/
