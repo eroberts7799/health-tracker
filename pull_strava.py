@@ -69,15 +69,20 @@ def parse_activity(a: dict) -> dict:
 def pull(days: int = 14) -> int:
     token = refresh_access_token()
     after = int((datetime.now(timezone.utc) - timedelta(days=days)).timestamp())
-    res = requests.get(
-        "https://www.strava.com/api/v3/athlete/activities",
-        headers={"Authorization": f"Bearer {token}"},
-        params={"after": after, "per_page": 100},
-        timeout=30,
-    )
-    if not res.ok:
-        sys.exit(f"Strava activities fetch failed: HTTP {res.status_code} — {res.text}")
-    activities = res.json()
+    activities = []
+    for page in range(1, 20):  # paginate — a single page silently caps at 100
+        res = requests.get(
+            "https://www.strava.com/api/v3/athlete/activities",
+            headers={"Authorization": f"Bearer {token}"},
+            params={"after": after, "per_page": 100, "page": page},
+            timeout=30,
+        )
+        if not res.ok:
+            sys.exit(f"Strava activities fetch failed: HTTP {res.status_code} — {res.text}")
+        batch = res.json()
+        activities.extend(batch)
+        if len(batch) < 100:
+            break
 
     conn = db.connect()
     with conn:
