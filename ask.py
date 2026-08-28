@@ -57,7 +57,10 @@ claim. If the data can't answer it, say what's missing — never estimate.
         ["claude", "-p"], input=prompt, capture_output=True, text=True, timeout=300
     )
     if result.returncode != 0:
-        sys.exit(f"claude -p failed: {result.stderr.strip()}")
+        err = (result.stderr or result.stdout).strip()
+        if any(s in err.lower() for s in ("log in", "login", "authenticat", "api key", "credential")):
+            sys.exit("The claude CLI isn't logged in — run `claude login` in a terminal, then retry.")
+        sys.exit(f"claude -p failed: {err}")
     return result.stdout.strip()
 
 
