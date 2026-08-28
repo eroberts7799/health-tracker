@@ -44,10 +44,13 @@ def build_context(conn) -> str:
 def ask(question: str) -> str:
     context = build_context(db.connect())
     prompt = f"""You are analyzing a 26-year-old athlete's real training and sleep data
-(runs 3x/week on a Runna plan — Tue intervals, Thu easy, Sat long — plus 4x/week
-lifting; goals: strength, endurance, leanness, recovery). Answer the question
-using ONLY the data below. Cite the specific dates and numbers behind every
-claim. If the data can't answer it, say what's missing — never estimate.
+(runs 3x/week on a Runna plan — typically one interval session, one easy run,
+one long run, but the days shift week to week — plus 4x/week lifting; goals:
+strength, endurance, leanness, recovery). The data does NOT label runs as
+easy/intervals/long: infer type from HR, pace, and distance, and never assume
+a high-HR run was a failed easy run — it may simply have been a workout day.
+Answer using ONLY the data below. Cite the specific dates and numbers behind
+every claim. If the data can't answer it, say what's missing — never estimate.
 
 {context}
 
