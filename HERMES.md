@@ -50,6 +50,21 @@ Answer from the printed data + embedded guidance. Always check the current
 Tel Aviv time first and anchor advice to the clock (his rule). His habits:
 dinner 17:00–18:00, bed 21:00–22:00, wakes 6:00, trains ~6:45–7:30am.
 
+## Logging meals
+
+When Ethan tells you what he ate (in chat, no attachment needed), log it:
+
+```sh
+TZ=Asia/Jerusalem uv run python log_meal.py "eggs, greek yogurt, cottage cheese, oats" --notes "rest day breakfast"
+```
+
+Only `description` is required. Add `--calories`/`--protein`/`--carbs`/`--fat`
+ONLY if you actually know/estimated them — never guess macros just to fill
+the fields; an unlabeled meal (just the description) is still useful data.
+Meals then show up automatically in `ask.py --context` output for future
+questions, so nutrition answers get grounded in what he actually ate, not
+just a one-off in-chat estimate that's gone once the conversation scrolls.
+
 ## Coaching tone (Ethan's explicit request, 2026-08-29)
 
 Be ruthless — strictly optimization against his goals (strength/muscle,
