@@ -55,10 +55,40 @@ def parse_sleep(day: str, data: dict) -> dict | None:
     }
 
 
-def pull(days: int = 14) -> int:
+def parse_activity(a: dict) -> dict:
+    start_local = a.get("startTimeLocal") or ""  # "2026-08-29 06:53:37"
+    calories, bmr = a.get("calories"), a.get("bmrCalories")
+    return {
+        "source": "garmin",
+        "external_id": str(a["activityId"]),
+        "date": start_local[:10],
+        "start_time": start_local,
+        "type": (a.get("activityType") or {}).get("typeKey"),
+        "name": a.get("activityName"),
+        "duration_s": round(a["duration"]) if a.get("duration") else None,
+        "distance_m": a.get("distance"),
+        "avg_hr": a.get("averageHR"),
+        "max_hr": a.get("maxHR"),
+        "elev_gain_m": a.get("elevationGain"),
+        "effort": a.get("activityTrainingLoad"),
+        "calories": (calories - bmr) if calories is not None and bmr is not None else calories,
+        "sweat_ml": a.get("waterEstimated"),
+        "aerobic_te": a.get("aerobicTrainingEffect"),
+        "raw": a,
+    }
+
+
+def pull(days: int = 14) -> tuple[int, int]:
     api = client()
     conn = db.connect()
-    saved = 0
+    start = (date.today() - timedelta(days=days - 1)).isoformat()
+
+    activities = api.get_activities_by_date(start, date.today().isoformat())
+    with conn:
+        for a in activities:
+            db.upsert_workout(conn, parse_activity(a))
+
+    slept = 0
     with conn:
         for i in range(days):
             day = (date.today() - timedelta(days=i)).isoformat()
@@ -70,11 +100,11 @@ def pull(days: int = 14) -> int:
             row = parse_sleep(day, data or {})
             if row:
                 db.upsert_sleep(conn, row)
-                saved += 1
-    return saved
+                slept += 1
+    return len(activities), slept
 
 
 if __name__ == "__main__":
     days = int(sys.argv[1]) if len(sys.argv) > 1 else 14
-    n = pull(days)
-    print(f"Garmin: upserted {n} nights of sleep from the last {days} days.")
+    n_act, n_sleep = pull(days)
+    print(f"Garmin: upserted {n_act} workouts and {n_sleep} nights of sleep from the last {days} days.")
