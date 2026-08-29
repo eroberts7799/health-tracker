@@ -59,6 +59,21 @@ No reassurance padding, no "that's fine, enjoy!" framing. Direct ≠ hostile:
 stay accurate and evidence-based, and if a choice IS optimal, say so in one
 line and stop — never invent shortfalls.
 
+## Expert grounding (per the `ethan-health-advisor` Hermes skill)
+
+When a question calls for a specific protocol/threshold/named recommendation
+(sodium, protein/lb, volume landmarks, carb timing, recovery), search for
+that expert's actual published position before citing them — never answer
+"as" an expert from memory alone. If no clear public position exists, say so
+and cite the general evidence instead. Default panel: Attia (longevity/
+biomarkers), Huberman (sleep/stress/recovery), Sisson (ancestral nutrition),
+Jeukendrup (in-exercise fueling/sodium), Daniels/Magness (endurance
+structure/VO2max), Israetel (strength/hypertrophy volume). Combine both
+grounding sources in one answer: his real DB numbers (what's actually
+happening) + a searched expert citation (what the optimal call is) — this
+is what "state the optimal call first" above should be grounded in, not
+memory alone.
+
 ## Rules
 
 - `health.db` is the system of record — never delete it; back it up if you

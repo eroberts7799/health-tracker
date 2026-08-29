@@ -1,12 +1,14 @@
-"""SQLite layer — one file on disk (health.db), two tables.
+"""SQLite layer — one file on disk (health.db), three tables.
 
 Every row keeps a `raw` column with the source's full JSON so nothing is
 lost while the parsed columns evolve. Upserts key on (source, external_id)
 for workouts and date for sleep, so re-running a pull never duplicates.
+Meals are append-only (multiple meals per day), logged via add_meal().
 """
 
 import json
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "health.db"
@@ -43,6 +45,19 @@ CREATE TABLE IF NOT EXISTS sleep (
   score       REAL,                   -- Garmin sleep score 0-100, if present
   source      TEXT,
   raw         TEXT
+);
+
+CREATE TABLE IF NOT EXISTS meals (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  date        TEXT NOT NULL,          -- YYYY-MM-DD, local
+  time        TEXT,                   -- HH:MM local, if known
+  description TEXT NOT NULL,          -- free text: "eggs, greek yogurt, cottage cheese, oats"
+  calories    REAL,                   -- optional, only if estimated/known
+  protein_g   REAL,
+  carbs_g     REAL,
+  fat_g       REAL,
+  notes       TEXT,                   -- e.g. "pre-run", "rest day", context
+  logged_at   TEXT NOT NULL           -- full timestamp this row was inserted, for audit
 );
 """
 
@@ -93,3 +108,20 @@ def upsert_sleep(conn: sqlite3.Connection, s: dict) -> None:
              score=excluded.score, source=excluded.source, raw=excluded.raw""",
         s,
     )
+
+
+def add_meal(conn: sqlite3.Connection, m: dict) -> int:
+    """Insert one meal log row. Only `date` and `description` are required;
+    everything else defaults to None. Multiple meals per day is normal —
+    this is append-only, not an upsert. Returns the new row id."""
+    m = dict(m)
+    for optional in ("time", "calories", "protein_g", "carbs_g", "fat_g", "notes"):
+        m.setdefault(optional, None)
+    m["logged_at"] = datetime.now().isoformat(timespec="seconds")
+    cur = conn.execute(
+        """INSERT INTO meals (date, time, description, calories, protein_g, carbs_g, fat_g, notes, logged_at)
+           VALUES (:date, :time, :description, :calories, :protein_g, :carbs_g, :fat_g, :notes, :logged_at)""",
+        m,
+    )
+    conn.commit()
+    return cur.lastrowid

@@ -38,6 +38,22 @@ def build_context(conn) -> str:
         (f"-{CONTEXT_DAYS} days",),
     ):
         lines.append(f"{r['date']} | {r['h']} | {r['dh']} | {r['rh']} | {r['resting_hr']} | {r['score']}")
+
+    lines += ["", "## Meals logged (last %d days)" % CONTEXT_DAYS,
+              "date | time | description | calories | protein_g | carbs_g | fat_g | notes"]
+    meal_rows = conn.execute(
+        """SELECT date, time, description, calories, protein_g, carbs_g, fat_g, notes
+           FROM meals WHERE date >= date('now', ?) ORDER BY date, time""",
+        (f"-{CONTEXT_DAYS} days",),
+    ).fetchall()
+    if meal_rows:
+        for r in meal_rows:
+            lines.append(f"{r['date']} | {r['time'] or ''} | {r['description']} | "
+                         f"{r['calories'] or ''} | {r['protein_g'] or ''} | "
+                         f"{r['carbs_g'] or ''} | {r['fat_g'] or ''} | {r['notes'] or ''}")
+    else:
+        lines.append("(no meals logged yet — nutrition questions can't be answered from data "
+                     "until meals are logged via log_meal.py)")
     return "\n".join(lines)
 
 
