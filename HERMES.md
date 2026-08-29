@@ -53,11 +53,21 @@ dinner 17:00–18:00, bed 21:00–22:00, wakes 6:00, trains ~6:45–7:30am.
 ## Logging meals
 
 When Ethan tells you what he ate — **in this chat, in Claude Code on his Mac,
-or any other tool that has access to this repo** — log it:
+or any other tool that has access to this repo** — log it. The flow is
+pull → log → push, because meals sync between machines through git:
 
 ```sh
+git pull --rebase
 TZ=Asia/Jerusalem uv run python log_meal.py "eggs, greek yogurt, cottage cheese, oats" --notes "rest day breakfast"
+git add meals.jsonl && git commit -m "log meal" && git push
 ```
+
+**`meals.jsonl` (git-tracked, append-only) is the source of truth for food**
+— the `meals` table in health.db is just a cache rebuilt from the file on
+every connect. Never edit the table directly; never resolve a meals.jsonl
+merge conflict by deleting lines (union both sides — every line is a meal
+someone logged). Also `git pull` before answering nutrition questions so
+you see meals logged from other machines.
 
 Only `description` is required. Add `--calories`/`--protein`/`--carbs`/`--fat`
 ONLY if you actually know/estimated them — never guess macros just to fill
@@ -66,12 +76,13 @@ Meals then show up automatically in `ask.py --context` output for future
 questions, so nutrition answers get grounded in what he actually ate, not
 just a one-off in-chat estimate that's gone once the conversation scrolls.
 
-**This applies regardless of which agent/tool you are.** `health.db` is the
-single shared source of truth across every tool Ethan uses — Hermes on his
-server, Claude Code on his Mac, anything else pointed at this repo. If he
-mentions food to you, log it here so every other tool sees it too. Don't
-let food data live only in one tool's chat history — that's the whole
-reason this table exists.
+**This applies regardless of which agent/tool you are.** If he mentions food
+to you, log it here so every other tool sees it too.
+
+**Migration note (one-time, server):** if your local health.db `meals` table
+has rows that predate meals.jsonl, re-log any that are missing from the file
+(the 2026-08-29 meals — breakfast, 14:30 snack, sushi dinner — are ALREADY in
+the file; do not re-add them, your old local sushi row is superseded).
 
 ## Coaching tone (Ethan's explicit request, 2026-08-29)
 

@@ -3,7 +3,13 @@
 Every row keeps a `raw` column with the source's full JSON so nothing is
 lost while the parsed columns evolve. Upserts key on (source, external_id)
 for workouts and date for sleep, so re-running a pull never duplicates.
-Meals are append-only (multiple meals per day), logged via add_meal().
+
+Meals are append-only and their source of truth is meals.jsonl (one JSON
+object per line, git-tracked) — NOT the meals table, which is rebuilt from
+the file on every connect(). This is what lets multiple agents (Hermes on
+the server, Claude Code on the Mac) share one food log through git while
+health.db itself stays local and gitignored. Row ids are therefore not
+stable across rebuilds; treat (logged_at) as the durable identity.
 """
 
 import json
@@ -12,6 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "health.db"
+MEALS_PATH = Path(__file__).parent / "meals.jsonl"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS workouts (
@@ -71,7 +78,35 @@ def connect() -> sqlite3.Connection:
             conn.execute(f"ALTER TABLE workouts ADD COLUMN {col}")
         except sqlite3.OperationalError:
             pass  # column already exists
+    _rebuild_meals(conn)
     return conn
+
+
+def _rebuild_meals(conn: sqlite3.Connection) -> None:
+    """The meals table is a cache of meals.jsonl — wipe and reload it so
+    every reader sees whatever the last `git pull` brought in."""
+    if not MEALS_PATH.exists():
+        return
+    rows = []
+    for line in MEALS_PATH.read_text().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            print(f"warning: skipping malformed meals.jsonl line: {line[:80]}")
+    with conn:
+        conn.execute("DELETE FROM meals")
+        for m in rows:
+            conn.execute(
+                """INSERT INTO meals (date, time, description, calories, protein_g,
+                                      carbs_g, fat_g, notes, logged_at)
+                   VALUES (:date, :time, :description, :calories, :protein_g,
+                           :carbs_g, :fat_g, :notes, :logged_at)""",
+                {k: m.get(k) for k in ("date", "time", "description", "calories",
+                                       "protein_g", "carbs_g", "fat_g", "notes", "logged_at")},
+            )
 
 
 def upsert_workout(conn: sqlite3.Connection, w: dict) -> None:
@@ -111,17 +146,14 @@ def upsert_sleep(conn: sqlite3.Connection, s: dict) -> None:
 
 
 def add_meal(conn: sqlite3.Connection, m: dict) -> int:
-    """Insert one meal log row. Only `date` and `description` are required;
-    everything else defaults to None. Multiple meals per day is normal —
-    this is append-only, not an upsert. Returns the new row id."""
+    """Append one meal to meals.jsonl (the git-tracked source of truth) and
+    refresh the table cache. Only `date` and `description` are required.
+    Remember to commit+push meals.jsonl so other agents see it."""
     m = dict(m)
     for optional in ("time", "calories", "protein_g", "carbs_g", "fat_g", "notes"):
         m.setdefault(optional, None)
     m["logged_at"] = datetime.now().isoformat(timespec="seconds")
-    cur = conn.execute(
-        """INSERT INTO meals (date, time, description, calories, protein_g, carbs_g, fat_g, notes, logged_at)
-           VALUES (:date, :time, :description, :calories, :protein_g, :carbs_g, :fat_g, :notes, :logged_at)""",
-        m,
-    )
-    conn.commit()
-    return cur.lastrowid
+    with MEALS_PATH.open("a") as f:
+        f.write(json.dumps(m, ensure_ascii=False) + "\n")
+    _rebuild_meals(conn)
+    return conn.execute("SELECT MAX(id) FROM meals").fetchone()[0]

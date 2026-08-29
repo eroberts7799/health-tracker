@@ -24,6 +24,9 @@ uv run python ask.py "question"   # grounded answer via claude -p
   routinely since 2026-08-29; running it re-adds `source='strava'` rows,
   which double-counts workouts in summary/ask until deleted.
 - Each metric has exactly one source — no cross-source merging or deduping.
+- **Meals** are manual: `log_meal.py "what was eaten"` appends to
+  `meals.jsonl` (git-tracked source of truth; the DB table is a cache
+  rebuilt from it). Sync between machines is pull → log → push.
 - `raw` columns keep each source's full JSON; parsed columns are a view on
   top, so a schema drift upstream never loses data.
 
