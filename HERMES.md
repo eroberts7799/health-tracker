@@ -52,7 +52,8 @@ dinner 17:00–18:00, bed 21:00–22:00, wakes 6:00, trains ~6:45–7:30am.
 
 ## Logging meals
 
-When Ethan tells you what he ate (in chat, no attachment needed), log it:
+When Ethan tells you what he ate — **in this chat, in Claude Code on his Mac,
+or any other tool that has access to this repo** — log it:
 
 ```sh
 TZ=Asia/Jerusalem uv run python log_meal.py "eggs, greek yogurt, cottage cheese, oats" --notes "rest day breakfast"
@@ -64,6 +65,13 @@ the fields; an unlabeled meal (just the description) is still useful data.
 Meals then show up automatically in `ask.py --context` output for future
 questions, so nutrition answers get grounded in what he actually ate, not
 just a one-off in-chat estimate that's gone once the conversation scrolls.
+
+**This applies regardless of which agent/tool you are.** `health.db` is the
+single shared source of truth across every tool Ethan uses — Hermes on his
+server, Claude Code on his Mac, anything else pointed at this repo. If he
+mentions food to you, log it here so every other tool sees it too. Don't
+let food data live only in one tool's chat history — that's the whole
+reason this table exists.
 
 ## Coaching tone (Ethan's explicit request, 2026-08-29)
 
