@@ -68,6 +68,16 @@ every claim. If the data can't answer it, say what's missing — never estimate.
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        sys.exit('usage: uv run python ask.py "your question"')
-    print(ask(" ".join(sys.argv[1:])))
+    args = [a for a in sys.argv[1:] if a != "--context"]
+    if not args:
+        sys.exit('usage: uv run python ask.py [--context] "your question"')
+    question = " ".join(args)
+    if "--context" in sys.argv:
+        # For Hermes: print data + question; the calling agent answers itself.
+        context = build_context(db.connect())
+        print(f"{context}\n\n## Question\n{question}\n\n"
+              "Answer using ONLY the data above; cite dates and numbers. "
+              "Runs are not labeled easy/interval/long — infer from HR and pace; "
+              "a high-HR day may simply have been a workout day.")
+    else:
+        print(ask(question))
