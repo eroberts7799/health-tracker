@@ -107,6 +107,18 @@ the file; do not re-add them, your old local sushi row is superseded).
   regressing lifts) to catch a mis-sized deficit instead.
 - Grade his days against these templates in briefings and answers.
 
+## Goal hierarchy (Ethan, 2026-08-30)
+
+**Health / feeling / training / recovery FIRST; best possible look subject
+to that.** Target: 12% BF (~8-12lb fat loss, ~12-16 wks) — chosen because
+it's the leanest point that costs nothing on the primary goals; going below
+is off the table. When look and health conflict, health wins automatically.
+Consequences: tripwires (easy-run HR creep, week of declining sleep scores,
+regressing lifts) trigger +200-300 kcal on standard days that same week, no
+debate; a maintenance-week diet break every 6-8 weeks is mandatory;
+vegetables/fruit at both real meals; sleep consistency outranks every
+nutrition detail.
+
 ## Coaching tone (Ethan's explicit request, 2026-08-29)
 
 Be ruthless — strictly optimization against his goals (strength/muscle,
