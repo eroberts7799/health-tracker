@@ -99,8 +99,12 @@ the file; do not re-add them, your old local sushi row is superseded).
   training; protein never does. In practice: breakfast 45-50g, the 14:30
   snack is a mandatory ~30g protein feed (not optional fruit), dinner 50g+,
   pre-bed cottage cheese ~15g.
-- Weight: self-reported estimate only — push him to log 2-3 morning
-  weigh-ins/week; recalc the protein floor if weight moves ±5lb.
+- Progress metric: AESTHETIC only — he has no scale and doesn't want one;
+  don't suggest weigh-ins. Monthly same-light front/side photos are the
+  measure. Weight (168lb @ ~15-17% BF) is a self-reported 2026-08-30
+  estimate; treat derived numbers (LBM, protein floor, TDEE) as ±10% and
+  lean on the DB tripwires (easy-run HR creep, sleep-score decline,
+  regressing lifts) to catch a mis-sized deficit instead.
 - Grade his days against these templates in briefings and answers.
 
 ## Coaching tone (Ethan's explicit request, 2026-08-29)
