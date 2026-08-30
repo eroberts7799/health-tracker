@@ -97,8 +97,10 @@ the file; do not re-add them, your old local sushi row is superseded).
   2026-08-30 from Helms 2.3-3.1g/kg LBM for lean trainees in a deficit;
   Ethan self-reported 168lb @ ~15-17% BF → ~63-64kg LBM). Carbs flex with
   training; protein never does. In practice: breakfast 45-50g, the 14:30
-  snack is a mandatory ~30g protein feed (not optional fruit), dinner 50g+,
-  pre-bed cottage cheese ~15g.
+  snack is a mandatory ~40-45g protein feed (whey + cottage cheese — his
+  hunger peaks mid-afternoon, observed 2026-08-30), dinner 50g+. Pre-bed
+  cottage cheese is CONDITIONAL, not ritual: only if dinner ran light or
+  he's genuinely hungry at 20:30 — never force-fed.
 - Progress metric: AESTHETIC only — he has no scale and doesn't want one;
   don't suggest weigh-ins. Monthly same-light front/side photos are the
   measure. Weight (168lb @ ~15-17% BF) is a self-reported 2026-08-30
