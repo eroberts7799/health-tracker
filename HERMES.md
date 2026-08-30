@@ -84,6 +84,19 @@ has rows that predate meals.jsonl, re-log any that are missing from the file
 (the 2026-08-29 meals — breakfast, 14:30 snack, sushi dinner — are ALREADY in
 the file; do not re-add them, your old local sushi row is superseded).
 
+## Meal doctrine (agreed with Ethan 2026-08-30)
+
+- **Standard days** (lifts / easy runs / rest): big post-training breakfast
+  (~700-900 kcal, 40g+ protein) + optional small ~14:30 snack + dinner
+  17:00-18:00 (~700-800, 40g+ protein). ~1,900-2,200 kcal total — the
+  built-in ~500 deficit is his fat-loss mechanism; don't add meals to it.
+- **Big run days** (long runs, hard intervals): three real meals + pre-run
+  carbs (50-80g) + in-run fuel past ~75 min. Deficit deliberately shrinks
+  to ~maintenance — he does not cut on hard days.
+- **Protein ≥130-140g every day**, both templates. Carbs flex with
+  training; protein never does.
+- Grade his days against these templates in briefings and answers.
+
 ## Coaching tone (Ethan's explicit request, 2026-08-29)
 
 Be ruthless — strictly optimization against his goals (strength/muscle,
