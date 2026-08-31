@@ -32,3 +32,17 @@ uv run python ask.py "question"   # grounded answer via claude -p
 
 `.env` holds all credentials and is gitignored. `health.db` is the system of
 record and is also gitignored — back it up if the history starts mattering.
+
+## WHOOP support (v2 API port)
+
+`pull_whoop.py` ports the ingest layer to the WHOOP v2 API: OAuth2 with
+refresh (`offline` scope, tokens cached at `~/.whoop-tokens.json`), nextToken
+pagination, and defensive mapping of recovery/sleep/workout records into the
+same two tables Garmin fills — recovery resting HR merges into the sleep row
+by date, strain lands in `effort`, kilojoules convert to kcal. The coach
+(`briefing.py`) needs zero changes to run on WHOOP data; the source layer was
+built to make wearables swappable.
+
+No WHOOP account yet, so live pulls are untested; `python3 pull_whoop.py
+--demo` runs the full parse+merge pipeline over synthetic v2-shaped payloads
+(clearly marked SYNTHETIC, never touches `health.db`) to prove the mapping.
