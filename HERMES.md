@@ -23,32 +23,67 @@ jobs: run the daily briefing, and answer ad-hoc questions from the data.
    Garmin for a while.
 4. Verify: `uv run python summary.py` should print real workouts and sleep.
 
+## Model billing setup (one-time, on this server) — added 2026-08-31
+
+**Why:** generating briefings/answers with an API-keyed model burns Ethan's
+paid API credits. All heavy generation must go through the `claude` CLI
+authenticated with his Max subscription instead.
+
+1. Install Claude Code: `curl -fsSL https://claude.ai/install.sh | bash`
+   (or `npm i -g @anthropic-ai/claude-code` if npm is present).
+2. Ethan will provide a long-lived OAuth token (from `claude setup-token`
+   on his Mac) in chat. Add to the shell profile of the user you run
+   commands as (chmod 600 that file):
+   ```
+   export CLAUDE_CODE_OAUTH_TOKEN=<token>
+   ```
+   NEVER echo the token back, log it, or commit it anywhere.
+3. **Make sure `ANTHROPIC_API_KEY` is NOT set** in the environment where
+   `claude` runs — if both are present the API key wins and billing
+   silently falls back to API credits. Check with
+   `env | grep -o 'ANTHROPIC_API_KEY'` (name only — never print values).
+4. Verify: `echo "say ok" | claude -p` should reply without auth errors.
+5. **Diagnostic (one-time):** report back to Ethan which model backend YOUR
+   own agent loop uses (provider + env var NAMES only, no values), so he
+   knows whether your Telegram routing still bills the API.
+
+**Rule:** never write a briefing or data-grounded answer with your own
+API-billed model. Assemble the prompt with the scripts, pipe it to
+`claude -p`, deliver the output. If `claude -p` errors, send Ethan one line
+saying so — do NOT quietly fall back to writing it yourself.
+
 ## Daily briefing (schedule this)
 
 Every day at **06:05 Asia/Jerusalem**, run:
 
 ```sh
-TZ=Asia/Jerusalem uv run python briefing.py --context
+TZ=Asia/Jerusalem uv run python briefing.py --context | claude -p
 ```
 
-The output is a fully-assembled prompt: his last 7 days of real data,
-upcoming Runna-plan workouts, this morning's Tel Aviv weather, his fixed
-habits, and writing instructions. Follow those instructions yourself to
-write the briefing (short, grounded, no fluff) and send it to Ethan on
-Telegram. If the script errors, send him one line saying the briefing
-failed and why — never send a briefing invented without the data.
+`briefing.py --context` prints a fully-assembled prompt: his last 7 days of
+real data, upcoming Runna-plan workouts, this morning's Tel Aviv weather,
+his fixed habits, and writing instructions. Piping it to `claude -p` writes
+the briefing on Ethan's subscription (see Model billing setup). Send the
+output to Ethan on Telegram verbatim. If either the script or `claude -p`
+errors, send him one line saying the briefing failed and why — never write
+the briefing yourself and never send one invented without the data.
 
 ## Ad-hoc questions (use whenever relevant)
 
 When Ethan asks anything about his training, sleep, recovery, or fueling:
 
 ```sh
-TZ=Asia/Jerusalem uv run python ask.py --context "his question verbatim"
+TZ=Asia/Jerusalem uv run python ask.py --context "his question verbatim" | claude -p
 ```
 
-Answer from the printed data + embedded guidance. Always check the current
-Tel Aviv time first and anchor advice to the clock (his rule). His habits:
-dinner 17:00–18:00, bed 21:00–22:00, wakes 6:00, trains ~6:45–7:30am.
+Deliver the output verbatim — the assembled prompt already contains the data
+and guidance, and `claude -p` bills his subscription, not API credits. If
+the question needs expert grounding (see Expert grounding below), do the
+search yourself first and append your findings to the question text you pass
+to `ask.py`, so the searched positions reach the model writing the answer.
+Always check the current Tel Aviv time first and anchor advice to the clock
+(his rule). His habits: dinner 17:00–18:00, bed 21:00–22:00, wakes 6:00,
+trains ~6:45–7:30am.
 
 ## Logging meals
 
