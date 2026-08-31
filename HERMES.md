@@ -50,7 +50,11 @@ subscription.
 loop should run on a Nous Portal `:free`-tagged model (e.g. Step 3.7
 Flash), NOT `anthropic/claude-sonnet-5` — premium routed models are what
 drained the credits. Switch via `hermes model` or the model block in your
-config.yaml. Before switching yourself: confirm you can restart safely and
+config.yaml, and set `fallback_providers` to the other `:free` model
+(Nemotron 3 Ultra) so an outage degrades instead of 402-ing dead. Do NOT
+use the `anthropic` OAuth provider for your own loop — per Nous docs it
+bills purchased extra-usage credits, not the base Max allowance (the
+silent-spend pattern this doc exists to kill). Before switching yourself: confirm you can restart safely and
 note how to revert (Ethan has no SSH access to this box — do not brick your
 own loop). All heavy generation stays on `claude -p` per this doc, so the
 free model only has to route: run the right script, pipe, deliver, log
