@@ -44,8 +44,18 @@ Verify health with `echo "say ok" | claude -p`.
 Known billing map (Hermes self-reported 2026-08-31): the Hermes agent loop
 itself (Telegram routing/reasoning) runs on Nous Portal inference billed to
 Ethan's Nous credits; everything piped through `claude -p` bills his Max
-subscription. Keep heavy generation on `claude -p` so Nous credits only pay
-for the light routing layer.
+subscription.
+
+**Target config (zero credits, Ethan's decision 2026-08-31):** the agent
+loop should run on a Nous Portal `:free`-tagged model (e.g. Step 3.7
+Flash), NOT `anthropic/claude-sonnet-5` — premium routed models are what
+drained the credits. Switch via `hermes model` or the model block in your
+config.yaml. Before switching yourself: confirm you can restart safely and
+note how to revert (Ethan has no SSH access to this box — do not brick your
+own loop). All heavy generation stays on `claude -p` per this doc, so the
+free model only has to route: run the right script, pipe, deliver, log
+meals. If the free model proves too weak to follow this doc reliably, tell
+Ethan — the fallback is a small credit top-up, not silent degradation.
 
 **Rule:** never write a briefing or data-grounded answer with your own
 API-billed model. Assemble the prompt with the scripts, pipe it to
