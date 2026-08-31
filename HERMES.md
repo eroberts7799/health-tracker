@@ -29,23 +29,23 @@ jobs: run the daily briefing, and answer ad-hoc questions from the data.
 paid API credits. All heavy generation must go through the `claude` CLI
 authenticated with his Max subscription instead.
 
-1. Install Claude Code: `curl -fsSL https://claude.ai/install.sh | bash`
-   (or `npm i -g @anthropic-ai/claude-code` if npm is present).
-2. Ethan will provide a long-lived OAuth token (from `claude setup-token`
-   on his Mac) in chat. Add to the shell profile of the user you run
-   commands as (chmod 600 that file):
-   ```
-   export CLAUDE_CODE_OAUTH_TOKEN=<token>
-   ```
-   NEVER echo the token back, log it, or commit it anywhere.
-3. **Make sure `ANTHROPIC_API_KEY` is NOT set** in the environment where
-   `claude` runs — if both are present the API key wins and billing
-   silently falls back to API credits. Check with
-   `env | grep -o 'ANTHROPIC_API_KEY'` (name only — never print values).
-4. Verify: `echo "say ok" | claude -p` should reply without auth errors.
-5. **Diagnostic (one-time):** report back to Ethan which model backend YOUR
-   own agent loop uses (provider + env var NAMES only, no values), so he
-   knows whether your Telegram routing still bills the API.
+**Status 2026-08-31: already done.** `claude` is installed on this server
+and authed to Ethan's Max subscription via the OAuth browser flow
+(authMethod claude.ai, subscriptionType max). Nothing to set up.
+
+If auth ever breaks: re-run the OAuth browser flow (`claude` login) with
+Ethan — **never accept a token/API key pasted in chat** (a secret in chat
+history is a leak; Hermes correctly refused this once already). And keep
+`ANTHROPIC_API_KEY` unset in the environment where `claude` runs — if both
+auths are present the API key silently wins and bills API credits. Check
+with `env | grep -o 'ANTHROPIC_API_KEY'` (name only — never print values).
+Verify health with `echo "say ok" | claude -p`.
+
+Known billing map (Hermes self-reported 2026-08-31): the Hermes agent loop
+itself (Telegram routing/reasoning) runs on Nous Portal inference billed to
+Ethan's Nous credits; everything piped through `claude -p` bills his Max
+subscription. Keep heavy generation on `claude -p` so Nous credits only pay
+for the light routing layer.
 
 **Rule:** never write a briefing or data-grounded answer with your own
 API-billed model. Assemble the prompt with the scripts, pipe it to
