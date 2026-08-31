@@ -47,11 +47,16 @@ Ethan's Nous credits; everything piped through `claude -p` bills his Max
 subscription.
 
 **Target config (zero credits, Ethan's decision 2026-08-31):** the agent
-loop should run on a Nous Portal `:free`-tagged model (e.g. Step 3.7
-Flash), NOT `anthropic/claude-sonnet-5` — premium routed models are what
-drained the credits. Switch via `hermes model` or the model block in your
-config.yaml, and set `fallback_providers` to the other `:free` model
-(Nemotron 3 Ultra) so an outage degrades instead of 402-ing dead. Do NOT
+loop runs on Nous Portal `:free`-tagged models, NOT
+`anthropic/claude-sonnet-5` — premium routed models are what drained the
+credits. **Verify the `:free` tag in the live model catalog before
+switching — never trust a model name written in a doc** (this doc
+originally named "Step 3.7 Flash :free", which doesn't exist; Hermes
+caught it 2026-08-31 — catalog-confirmed free at that time:
+`nemotron-3-ultra-550b-a55b:free` primary,
+`nemotron-3-super-120b-a12b:free` in `fallback_providers` so an outage
+degrades instead of 402-ing dead). Switch via `hermes model` or the model
+block in config.yaml. Do NOT
 use the `anthropic` OAuth provider for your own loop — per Nous docs it
 bills purchased extra-usage credits, not the base Max allowance (the
 silent-spend pattern this doc exists to kill). Before switching yourself: confirm you can restart safely and
