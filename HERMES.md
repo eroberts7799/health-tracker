@@ -87,7 +87,30 @@ output to Ethan on Telegram verbatim. If either the script or `claude -p`
 errors, send him one line saying the briefing failed and why — never write
 the briefing yourself and never send one invented without the data.
 
-## Ad-hoc questions (use whenever relevant)
+## Doctrine engine + cockpit (added 2026-09-02)
+
+The doctrine is now software: `doctrine_rules.py` (the rules, formalized)
++ `doctrine_eval.py` (nightly grading into a `verdicts` table) +
+`cockpit.py` (a one-page visual flight log). The 06:05 briefing prompt now
+includes computed verdicts automatically — your flow doesn't change, but
+NEVER recompute or contradict the verdicts; they're the system of record.
+
+**One-time setup (this server):**
+1. `sudo apt-get install -y wkhtmltopdf` (provides `wkhtmltoimage` for the
+   cockpit PNG; if install fails, cockpit degrades to sending HTML and
+   says so — don't block on it).
+2. Add to this repo's `.env`: the `TELEGRAM_BOT_TOKEN` line copied from
+   `../doctrine/.env` (same box, no secret travels through chat) plus
+   `TELEGRAM_CHAT_ID=<your-chat-id>`.
+3. Add cron (after the briefing):
+   `15 6 * * * cd /path/to/health-tracker && git pull -q && TZ=Asia/Jerusalem uv run python cockpit.py --send >> cockpit.log 2>&1`
+
+**Amendment rules:** the briefing may propose ONE doctrine amendment as a
+diff when 14-day evidence supports it. NEVER apply an amendment yourself —
+Ethan merges by editing `doctrine_rules.py` + this file together in one
+commit. If he replies "merge it" in chat, tell him to say it to Claude
+Code on his Mac (or edit himself); your job is proposing and reporting,
+not legislating.
 
 When Ethan asks anything about his training, sleep, recovery, or fueling:
 
