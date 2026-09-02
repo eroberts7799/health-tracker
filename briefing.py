@@ -115,6 +115,13 @@ def verdicts_section() -> str:
            ORDER BY rule_id""", (since,)
     ):
         lines.append(f"{r['rule_id']}: {r['p']} PASS / {r['f']} FAIL")
+
+    lines.append("\n14-day FAIL details (the only admissible amendment evidence):")
+    fails = conn.execute(
+        "SELECT date, rule_id, detail FROM verdicts WHERE date >= ? AND status='FAIL' ORDER BY date",
+        (since,),
+    ).fetchall()
+    lines += [f"{r['date']} | {r['rule_id']} | {r['detail']}" for r in fails] or ["(none)"]
     return "\n".join(lines)
 
 
@@ -148,11 +155,15 @@ Write a SHORT briefing (under 150 words, plain text, no markdown headers):
    fiber FAIL -12"). Copy statuses/margins from the verdicts section
    verbatim — never recompute. Skip NO_DATA rules unless the gap itself
    needs flagging (e.g. logging stopped). Name any fired tripwire plainly.
-5. AMENDMENT (most days: none): only if the 14-day adherence shows a
-   repeated pattern (3+ FAILs on one rule), propose exactly ONE doctrine
-   amendment as a two-line diff ("- old rule" / "+ proposed rule") with the
-   evidence counts. If nothing repeats, omit this entirely — no filler
-   proposals.
+5. AMENDMENT (most days: none): only if the 14-day FAIL DETAILS show 3+
+   failures whose details are attributable to the exact rule text you want
+   to change. Cite the failing verdicts (dates + details) in the proposal,
+   and propose exactly ONE amendment as a two-line diff ("- old rule" /
+   "+ proposed rule"). A FAIL on a different sub-rule, or FAILs that
+   predate the rule they broke, are NOT evidence — when in doubt, propose
+   nothing. Rejected precedent (2026-09-02): a pre-RUN carb amendment was
+   proposed off pre-LIFT cap failures; evidence must match the rule being
+   amended.
 Ground every number in the data. No generic filler, no motivational fluff."""
 
 
