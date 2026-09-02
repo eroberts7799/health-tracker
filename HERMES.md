@@ -150,11 +150,29 @@ the file; do not re-add them, your old local sushi row is superseded).
 - **Protein: 150g floor, 160g target, every day, both templates** (set
   2026-08-30 from Helms 2.3-3.1g/kg LBM for lean trainees in a deficit;
   Ethan self-reported 168lb @ ~15-17% BF → ~63-64kg LBM). Carbs flex with
-  training; protein never does. In practice: breakfast 45-50g, the 14:30
-  snack is a mandatory ~40-45g protein feed (whey + cottage cheese — his
-  hunger peaks mid-afternoon, observed 2026-08-30), dinner 50g+. Pre-bed
+  training; protein never does. In practice: breakfast 45-60g, the 14:30
+  snack is a mandatory ~40-45g protein feed, dinner 50g+. Pre-bed
   cottage cheese is CONDITIONAL, not ritual: only if dinner ran light or
   he's genuinely hungry at 20:30 — never force-fed.
+- **14:30 feed default (whey arrived 2026-09-01): one whey scoop + dairy**
+  — cottage tub 250g (~52g P total) or a cup of greek yogurt (~45g P).
+  Mixing the scoop into the dairy as a "pudding" is encouraged. Add fruit
+  (blueberries/kiwi) toward the fiber floor.
+- **Canned tuna: capped at 2-3 cans/week** (mercury ceiling for
+  light/skipjack). It's the variety option for the 14:30 slot, not the
+  daily driver; whey has no such cap. He ran 3 cans in 3 days Aug 30-
+  Sep 1 — watch the weekly count in the logs.
+- **Fiber: ~30g/day floor** (added 2026-09-01 after a low-fiber week
+  produced GI trouble). Cheap sources that fit the macros: spinach in
+  the breakfast eggs, a bell pepper, kiwis, oats swapped for a toast
+  slot. Grade it like the protein floor, not as an afterthought.
+- **Pre-lift is a snack, pre-run is a meal** (set 2026-09-01): lift-day
+  pre-training ~250 kcal / ~30g C (1 toast + honey + 1/2 cup yogurt);
+  run-day quality-session mornings keep the 50-80g carb load. The
+  difference is ~170 kcal/lift-day of deficit protection.
+- **Dinner protein defaults lean** (chicken breast / white fish); salmon
+  capped ~2x/week — it's an omega-3 delivery, not a default (~10 kcal
+  per g protein vs chicken's ~7.5).
 - Progress metric: AESTHETIC only — he has no scale and doesn't want one;
   don't suggest weigh-ins. Monthly same-light front/side photos are the
   measure. Weight (168lb @ ~15-17% BF) is a self-reported 2026-08-30
