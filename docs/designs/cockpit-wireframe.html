@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DOCTRINE — Tuesday, September 2</title>
+<style>
+  /* Wireframe: intentionally rough. No boxes, no cards — hairlines + type scale only. */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    color: #1a1a1a; background: #fcfcfa;
+    max-width: 680px; margin: 0 auto; padding: 64px 24px 96px;
+    line-height: 1.5; font-size: 14px;
+  }
+  .hairline { border: 0; border-top: 1px solid #d8d8d2; margin: 40px 0; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.18em; color: #8a8a82; text-transform: uppercase; }
+  h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.01em; margin: 6px 0 2px; }
+  .verdict-day { font-size: 15px; color: #55554e; margin-top: 4px; }
+  .rule { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0; border-bottom: 1px solid #ececе6; }
+  .rule:last-child { border-bottom: 0; }
+  .rule-name { font-size: 15px; }
+  .rule-margin { color: #8a8a82; font-size: 13px; margin-left: 12px; }
+  .pass { color: #1a1a1a; }
+  .fail { color: #b3401f; font-weight: 700; }
+  .spark { color: #b9b9b0; font-size: 13px; letter-spacing: 2px; }
+  .spark b { color: #1a1a1a; font-weight: 400; }
+  .spark-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; }
+  .diff { margin: 20px 0 8px; font-size: 13px; line-height: 1.7; }
+  .diff .minus { color: #8a8a82; text-decoration: line-through; }
+  .diff .plus  { color: #b3401f; }
+  .diff-why { font-size: 13px; color: #55554e; margin-top: 10px; max-width: 56ch; }
+  .actions { margin-top: 18px; font-size: 13px; letter-spacing: 0.06em; }
+  .actions a { color: #1a1a1a; text-decoration: underline; text-underline-offset: 3px; margin-right: 28px; }
+  footer { color: #8a8a82; font-size: 13px; }
+  footer b { color: #1a1a1a; font-weight: 700; }
+</style>
+</head>
+<body>
+
+  <div class="eyebrow">Doctrine · Day 34 of the cut</div>
+  <h1>Tuesday, September 2</h1>
+  <div class="verdict-day">4 of 5 rules holding. Fiber is the leak — third day under floor.</div>
+
+  <hr class="hairline">
+
+  <div class="eyebrow">Today's verdicts</div>
+  <div class="rule"><span class="rule-name pass">Protein floor · 150g</span><span><span class="pass">PASS</span><span class="rule-margin">+21g</span></span></div>
+  <div class="rule"><span class="rule-name fail">Fiber floor · 30g</span><span><span class="fail">FAIL</span><span class="rule-margin">−12g</span></span></div>
+  <div class="rule"><span class="rule-name pass">Easy-run HR ceiling · 145</span><span><span class="pass">PASS</span><span class="rule-margin">avg 138</span></span></div>
+  <div class="rule"><span class="rule-name pass">Sleep floor · 7h</span><span><span class="pass">PASS</span><span class="rule-margin">7.7h · score 93</span></span></div>
+  <div class="rule"><span class="rule-name pass">Day template · standard</span><span><span class="pass">PASS</span><span class="rule-margin">2,130 kcal</span></span></div>
+
+  <hr class="hairline">
+
+  <div class="eyebrow">90-day adherence</div>
+  <div class="spark-row"><span>Protein</span><span class="spark">▁▃▅▆▇▇▇█▇███▇███<b>·96%</b></span></div>
+  <div class="spark-row"><span>Fiber</span><span class="spark">▁▁▂▁▃▂▁▃▂▄▃▂▁▂▂▁<b>·41%</b></span></div>
+  <div class="spark-row"><span>HR ceiling</span><span class="spark">▅▆▆▇▆▇▇▇█▇▇███▇█<b>·88%</b></span></div>
+  <div class="spark-row"><span>Sleep</span><span class="spark">▆▇▆▇█▇▆▇▇█▇▇▆▇██<b>·91%</b></span></div>
+
+  <hr class="hairline">
+
+  <div class="eyebrow">Proposed amendment · #7</div>
+  <div class="diff">
+    <div class="minus">− Fiber: ~30g/day. Cheap sources: oats, spinach, bell pepper, kiwi.</div>
+    <div class="plus">+ Fiber: ~30g/day, with ≥10g REQUIRED at breakfast (oats or fruit) —</div>
+    <div class="plus">+ afternoon backfill has failed 11 of 14 days; front-load or it doesn't happen.</div>
+  </div>
+  <div class="diff-why">Evidence: breakfast-fiber days hit the floor 83% of the time; backfill days, 12%. Correlation with your own logged pattern, n=34 days.</div>
+  <div class="actions"><a href="#">merge into doctrine</a><a href="#">reject</a><a href="#">discuss →</a></div>
+
+  <hr class="hairline">
+
+  <footer>Tomorrow · <b>W5 Thu Easy Run — 5.5mi</b> · pre-run is a meal: 50–80g carbs · LMNT half before</footer>
+
+</body>
+</html>
