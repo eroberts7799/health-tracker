@@ -99,7 +99,11 @@ def _rebuild_meals(conn: sqlite3.Connection) -> None:
         if not line:
             continue
         try:
-            rows.append(json.loads(line))
+            m = json.loads(line)
+            # superseded entries stay in the file (append-only log) but are
+            # excluded from the cache so totals aren't double-counted
+            if not m.get("superseded"):
+                rows.append(m)
         except json.JSONDecodeError:
             print(f"warning: skipping malformed meals.jsonl line: {line[:80]}")
     with conn:
