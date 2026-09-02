@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS meals (
   protein_g   REAL,
   carbs_g     REAL,
   fat_g       REAL,
+  fiber_g     REAL,
   notes       TEXT,                   -- e.g. "pre-run", "rest day", context
   logged_at   TEXT NOT NULL           -- full timestamp this row was inserted, for audit
 );
@@ -73,9 +74,14 @@ def connect() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
-    for col in ("calories REAL", "sweat_ml REAL", "aerobic_te REAL"):
+    for table, col in (
+        ("workouts", "calories REAL"),
+        ("workouts", "sweat_ml REAL"),
+        ("workouts", "aerobic_te REAL"),
+        ("meals", "fiber_g REAL"),
+    ):
         try:
-            conn.execute(f"ALTER TABLE workouts ADD COLUMN {col}")
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col}")
         except sqlite3.OperationalError:
             pass  # column already exists
     _rebuild_meals(conn)
@@ -101,11 +107,12 @@ def _rebuild_meals(conn: sqlite3.Connection) -> None:
         for m in rows:
             conn.execute(
                 """INSERT INTO meals (date, time, description, calories, protein_g,
-                                      carbs_g, fat_g, notes, logged_at)
+                                      carbs_g, fat_g, fiber_g, notes, logged_at)
                    VALUES (:date, :time, :description, :calories, :protein_g,
-                           :carbs_g, :fat_g, :notes, :logged_at)""",
+                           :carbs_g, :fat_g, :fiber_g, :notes, :logged_at)""",
                 {k: m.get(k) for k in ("date", "time", "description", "calories",
-                                       "protein_g", "carbs_g", "fat_g", "notes", "logged_at")},
+                                       "protein_g", "carbs_g", "fat_g", "fiber_g",
+                                       "notes", "logged_at")},
             )
 
 
@@ -150,7 +157,7 @@ def add_meal(conn: sqlite3.Connection, m: dict) -> int:
     refresh the table cache. Only `date` and `description` are required.
     Remember to commit+push meals.jsonl so other agents see it."""
     m = dict(m)
-    for optional in ("time", "calories", "protein_g", "carbs_g", "fat_g", "notes"):
+    for optional in ("time", "calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "notes"):
         m.setdefault(optional, None)
     m["logged_at"] = datetime.now().isoformat(timespec="seconds")
     with MEALS_PATH.open("a") as f:

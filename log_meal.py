@@ -26,6 +26,7 @@ def main():
     p.add_argument("--protein", type=float, default=None, help="grams")
     p.add_argument("--carbs", type=float, default=None, help="grams")
     p.add_argument("--fat", type=float, default=None, help="grams")
+    p.add_argument("--fiber", type=float, default=None, help="grams")
     p.add_argument("--notes", default=None, help="e.g. 'pre-run', 'rest day'")
     args = p.parse_args()
 
@@ -41,6 +42,7 @@ def main():
         "protein_g": args.protein,
         "carbs_g": args.carbs,
         "fat_g": args.fat,
+        "fiber_g": args.fiber,
         "notes": args.notes,
     })
     print(f"Logged meal #{row_id}: {meal_date} {meal_time} — {args.description}")
