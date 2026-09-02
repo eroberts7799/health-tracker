@@ -2,3 +2,5 @@
 .venv/
 health.db
 __pycache__/
+cockpit.html
+cockpit.png
