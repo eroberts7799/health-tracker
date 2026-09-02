@@ -25,6 +25,32 @@ def send(text: str) -> None:
         sys.exit(f"telegram send failed: HTTP {res.status_code} — {res.text}")
 
 
+def send_photo(path: str, caption: str = "") -> None:
+    token = os.environ["TELEGRAM_BOT_TOKEN"]
+    with open(path, "rb") as f:
+        res = requests.post(
+            f"https://api.telegram.org/bot{token}/sendPhoto",
+            data={"chat_id": os.environ["TELEGRAM_CHAT_ID"], "caption": caption},
+            files={"photo": f},
+            timeout=60,
+        )
+    if not res.ok:
+        sys.exit(f"telegram photo send failed: HTTP {res.status_code} — {res.text}")
+
+
+def send_document(path: str, caption: str = "") -> None:
+    token = os.environ["TELEGRAM_BOT_TOKEN"]
+    with open(path, "rb") as f:
+        res = requests.post(
+            f"https://api.telegram.org/bot{token}/sendDocument",
+            data={"chat_id": os.environ["TELEGRAM_CHAT_ID"], "caption": caption},
+            files={"document": f},
+            timeout=60,
+        )
+    if not res.ok:
+        sys.exit(f"telegram document send failed: HTTP {res.status_code} — {res.text}")
+
+
 if __name__ == "__main__":
     send(" ".join(sys.argv[1:]) or "health-tracker test ping")
     print("sent")
