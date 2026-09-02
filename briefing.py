@@ -18,6 +18,7 @@ from datetime import date, timedelta
 import requests
 
 import db
+import doctrine_eval
 import notify
 import pull_garmin
 
@@ -91,6 +92,32 @@ def recent_data() -> str:
     return "\n".join(lines)
 
 
+def verdicts_section() -> str:
+    """Run yesterday's doctrine evals and format verdicts + 14-day history."""
+    conn = db.connect()
+    conn.executescript(doctrine_eval.VERDICTS_SCHEMA)
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    with conn:
+        doctrine_eval.evaluate(conn, yesterday)
+
+    lines = [f"Yesterday ({yesterday}), one line per rule (status | margin | detail):"]
+    for r in conn.execute(
+        "SELECT * FROM verdicts WHERE date=? ORDER BY status DESC, rule_id", (yesterday,)
+    ):
+        m = f"{r['margin']:+.0f}" if r["margin"] is not None else "-"
+        lines.append(f"{r['rule_id']} | {r['status']} | {m} | {r['detail'] or ''}")
+
+    lines.append("\n14-day adherence per rule (PASS/FAIL counts, NO_DATA excluded):")
+    since = (date.today() - timedelta(days=14)).isoformat()
+    for r in conn.execute(
+        """SELECT rule_id, SUM(status='PASS') p, SUM(status='FAIL') f
+           FROM verdicts WHERE date >= ? GROUP BY rule_id HAVING p + f > 0
+           ORDER BY rule_id""", (since,)
+    ):
+        lines.append(f"{r['rule_id']}: {r['p']} PASS / {r['f']} FAIL")
+    return "\n".join(lines)
+
+
 def build_prompt() -> str:
     api = pull_garmin.client()
     pull_garmin.pull(3)
@@ -103,6 +130,9 @@ def build_prompt() -> str:
 ## His real data (Garmin)
 {recent_data()}
 
+## Doctrine verdicts (computed by doctrine_eval.py — do not recompute)
+{verdicts_section()}
+
 ## Planned workouts (Runna plan; days sometimes shift)
 {planned_workouts(api)}
 
@@ -114,8 +144,15 @@ Write a SHORT briefing (under 150 words, plain text, no markdown headers):
 2. Today's workout (planned or inferred) with a concrete pre-fuel
    instruction — what to eat and when, given his 6:45-7am start.
 3. Hydration/electrolyte call keyed to the actual weather.
-4. One forward-looking line (tomorrow's session or a recovery flag from the
-   week's load) only if genuinely useful.
+4. DOCTRINE line: yesterday's verdicts, compact ("protein +21 · kcal PASS ·
+   fiber FAIL -12"). Copy statuses/margins from the verdicts section
+   verbatim — never recompute. Skip NO_DATA rules unless the gap itself
+   needs flagging (e.g. logging stopped). Name any fired tripwire plainly.
+5. AMENDMENT (most days: none): only if the 14-day adherence shows a
+   repeated pattern (3+ FAILs on one rule), propose exactly ONE doctrine
+   amendment as a two-line diff ("- old rule" / "+ proposed rule") with the
+   evidence counts. If nothing repeats, omit this entirely — no filler
+   proposals.
 Ground every number in the data. No generic filler, no motivational fluff."""
 
 
