@@ -45,6 +45,8 @@ TZ = ZoneInfo("Asia/Jerusalem")
 SESSION_FILE = ROOT / ".coach_session"   # gitignored; holds the live session id
 INBOX = ROOT / "inbox"                   # gitignored; downloaded photos land here
 TURN_TIMEOUT_S = 900
+API_RETRIES = 2                  # extra attempts on Anthropic-side api_error (529 etc.)
+API_RETRY_WAIT_S = 30
 ALLOWED_TOOLS = "Bash,Read,Edit,Write,Glob,Grep,WebSearch,WebFetch"
 STARTED_AT = time.time()
 
@@ -93,13 +95,20 @@ def run_claude(message: str) -> str:
 
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     env["TZ"] = "Asia/Jerusalem"
-    r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                       timeout=TURN_TIMEOUT_S, cwd=ROOT, env=env)
-    out = r.stdout.strip()
-    try:
-        data = json.loads(out)
-    except json.JSONDecodeError:
-        data = None
+    for attempt in range(API_RETRIES + 1):
+        r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
+                           timeout=TURN_TIMEOUT_S, cwd=ROOT, env=env)
+        out = r.stdout.strip()
+        try:
+            data = json.loads(out)
+        except json.JSONDecodeError:
+            data = None
+        # 529 Overloaded / 5xx from Anthropic: nothing local is wrong — wait and retry
+        if data and data.get("terminal_reason") == "api_error" and attempt < API_RETRIES:
+            print(f"api_error (status {data.get('api_error_status')}), retry {attempt + 1}", flush=True)
+            time.sleep(API_RETRY_WAIT_S)
+            continue
+        break
 
     if data is None:  # no JSON at all: the CLI itself died
         err = (r.stderr.strip() or out or "no output")[:600]
