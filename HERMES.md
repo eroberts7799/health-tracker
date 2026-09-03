@@ -108,9 +108,49 @@ NEVER recompute or contradict the verdicts; they're the system of record.
 **Amendment rules:** the briefing may propose ONE doctrine amendment as a
 diff when 14-day evidence supports it. NEVER apply an amendment yourself —
 Ethan merges by editing `doctrine_rules.py` + this file together in one
-commit. If he replies "merge it" in chat, tell him to say it to Claude
-Code on his Mac (or edit himself); your job is proposing and reporting,
-not legislating.
+commit. If he replies "merge it" in chat, tell him to say it to the coach
+bot (Claude Code, see below) or on his Mac; your job is proposing and
+reporting, not legislating.
+
+## Coach bot — Claude Code over Telegram (added 2026-09-03)
+
+`coach_bot.py` is a Telegram bot that forwards every message from Ethan to
+a persistent headless **Claude Code** session (`claude -p --resume`) running
+in this repo with tools enabled. It replaces you as the thing Ethan chats
+with about health: it pulls Garmin, queries the DB, logs meals, commits,
+and reads food photos itself. Your role shrinks to ops: deploy, cron,
+restarts, and reporting failures. Do NOT answer his health questions
+yourself anymore; do not run `ask.py` unless he asks you to explicitly.
+
+**One-time setup (this server):**
+1. Ethan creates a NEW bot with @BotFather and pastes its token in chat
+   (allowed — BotFather tokens rotate trivially; OAuth tokens never).
+   The old bot token stays with `../doctrine` (its long-poller owns it;
+   two pollers on one token 409-conflict).
+2. In this repo's `.env` set:
+   `TELEGRAM_BOT_TOKEN=<new bot token>` (replace the doctrine copy),
+   `TELEGRAM_CHAT_ID=<your-chat-id>`,
+   `CLAUDE_BIN=/opt/data/npm-global/bin/claude`.
+   Because the 06:05 briefing and 06:15 cockpit crons use the same env
+   var, they now land in the coach-bot chat too — one thread for everything.
+   Switch the briefing cron to plain `briefing.py` (default mode sends via
+   notify.py) instead of piping `--context` to `claude -p` and relaying it.
+3. `git pull`, then start it detached and keep it alive across reboots:
+   `cd /path/to/health-tracker && nohup uv run python coach_bot.py >> coach_bot.log 2>&1 &`
+   and a cron line `@reboot cd /path/to/health-tracker && nohup uv run python coach_bot.py >> coach_bot.log 2>&1 &`.
+4. Check `git push` works from this repo (`git push --dry-run`). The bot
+   commits meal logs here and pushes; if the GitHub token lacks write
+   access to `health-tracker`, tell Ethan to grant Contents: read+write —
+   until then meals live only on this box.
+5. Verify: Ethan sends "ping" from the new bot chat; a reply proves the
+   whole chain (bot → claude → reply). `/status` shows the session id.
+
+**Restart** after each `git pull` that touches `coach_bot.py` or
+`CLAUDE.md`: `pkill -f coach_bot.py` then the nohup line. The session id
+lives in `.coach_session` (gitignored) and survives restarts; `/new` in
+the chat resets it. `coach_bot.log` has tracebacks. If Ethan reports the
+bot is silent, check the process is alive and `echo "say ok" | claude -p`
+still works — it's always one of those two.
 
 When Ethan asks anything about his training, sleep, recovery, or fueling:
 

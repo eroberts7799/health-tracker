@@ -4,3 +4,6 @@ health.db
 __pycache__/
 cockpit.html
 cockpit.png
+.coach_session
+inbox/
+*.log
