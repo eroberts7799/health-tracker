@@ -101,7 +101,7 @@ def run_claude(message: str) -> str:
     except json.JSONDecodeError:
         data = None
 
-    if data is None or r.returncode != 0:
+    if data is None:  # no JSON at all: the CLI itself died
         err = (r.stderr.strip() or out or "no output")[:600]
         if sid and ("session" in err.lower() and "not found" in err.lower() or "No conversation found" in err):
             SESSION_FILE.unlink(missing_ok=True)   # stale id (server cleanup) — next turn starts fresh
@@ -111,8 +111,13 @@ def run_claude(message: str) -> str:
     if data.get("session_id"):
         SESSION_FILE.write_text(data["session_id"])
     reply = (data.get("result") or "").strip()
-    if data.get("is_error"):
-        reply = f"⚠️ {reply or data.get('error') or 'error with no message'}"
+    if data.get("is_error") or r.returncode != 0:
+        # JSON came back but flagged an error: surface the human text, not the blob
+        detail = reply or str(data.get("error") or data.get("errors") or "")
+        if not detail:
+            detail = ", ".join(f"{k}={data[k]}" for k in ("stop_reason", "terminal_reason", "num_turns") if k in data)
+        stderr = r.stderr.strip()[:300]
+        reply = f"⚠️ Claude turn errored (exit {r.returncode}): {detail[:800]}" + (f"\nstderr: {stderr}" if stderr else "")
     denials = data.get("permission_denials") or []
     if denials:
         names = ", ".join(sorted({d.get("tool_name", "?") for d in denials}))
