@@ -11,6 +11,7 @@ Two modes:
               standalone fallback; `--dry` prints instead of sending
 """
 
+import os
 import subprocess
 import sys
 from datetime import date, timedelta
@@ -169,7 +170,7 @@ Ground every number in the data. No generic filler, no motivational fluff."""
 
 def build_briefing() -> str:
     result = subprocess.run(
-        ["claude", "-p"], input=build_prompt(), capture_output=True, text=True, timeout=300
+        [os.environ.get("CLAUDE_BIN", "claude"), "-p"], input=build_prompt(), capture_output=True, text=True, timeout=300
     )
     if result.returncode != 0:
         err = (result.stderr or result.stdout).strip()
