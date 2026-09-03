@@ -34,6 +34,7 @@ with times. He reads on a phone between things.
 ```
 uv run python pull_garmin.py 3                  # fresh workouts + sleep
 uv run python summary.py                        # quick look
+uv run python -c "import db; db.connect()"      # REFRESH the meals cache first (see below)
 sqlite3 health.db "SELECT ..."                  # workouts, sleep, verdicts, meals
 uv run python doctrine_eval.py --date YYYY-MM-DD
 uv run python briefing.py --context             # the assembled morning picture
@@ -42,7 +43,9 @@ git add meals.jsonl NOTES.md && git commit -m "log meal" && git push
 ```
 
 Meals: `meals.jsonl` is the append-only source of truth; the `meals` table
-is a cache rebuilt from it. To correct a logged meal, add `"superseded": true`
+is a cache rebuilt from it ONLY when Python calls `db.connect()` — the
+sqlite3 CLI sees a stale table after a `git pull`. Run the refresh line
+above (or just read today's lines of `meals.jsonl`) before quoting meals. To correct a logged meal, add `"superseded": true`
 to the bad line and log a new one — never delete lines. Only record macros
 you actually estimated; an unlabeled meal is honest data, a guessed macro
 is not. Always include `--fiber` when you estimate (fiber floor is graded).
