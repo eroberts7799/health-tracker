@@ -45,8 +45,8 @@ TZ = ZoneInfo("Asia/Jerusalem")
 SESSION_FILE = ROOT / ".coach_session"   # gitignored; holds the live session id
 INBOX = ROOT / "inbox"                   # gitignored; downloaded photos land here
 TURN_TIMEOUT_S = 900
-API_RETRIES = 2                  # extra attempts on Anthropic-side api_error (529 etc.)
-API_RETRY_WAIT_S = 30
+API_RETRIES = 1                  # extra attempt on Anthropic-side api_error (529 etc.)
+API_RETRY_WAIT_S = 20
 ALLOWED_TOOLS = "Bash,Read,Edit,Write,Glob,Grep,WebSearch,WebFetch"
 STARTED_AT = time.time()
 
@@ -80,7 +80,11 @@ def download(file_id: str, suffix: str) -> Path:
 
 
 # ---------------------------------------------------------------- claude
-def run_claude(message: str) -> str:
+def r_elapsed(data: dict) -> float:
+    return (data.get("duration_ms") or 0) / 1000
+
+
+def run_claude(message: str, on_retry=None) -> str:
     """One turn against the persistent session; returns reply text."""
     stamp = datetime.now(TZ).strftime("%A %Y-%m-%d %H:%M")
     prompt = f"[Tel Aviv time now: {stamp}]\n{message}"
@@ -105,7 +109,10 @@ def run_claude(message: str) -> str:
             data = None
         # 529 Overloaded / 5xx from Anthropic: nothing local is wrong — wait and retry
         if data and data.get("terminal_reason") == "api_error" and attempt < API_RETRIES:
-            print(f"api_error (status {data.get('api_error_status')}), retry {attempt + 1}", flush=True)
+            status = data.get("api_error_status")
+            print(f"api_error (status {status}), retry {attempt + 1}", flush=True)
+            if on_retry:
+                on_retry(f"Anthropic returned {status} (overloaded) after {int(r_elapsed(data))}s — retrying once.")
             time.sleep(API_RETRY_WAIT_S)
             continue
         break
@@ -173,7 +180,7 @@ def worker() -> None:
         try:
             prompt = message_to_prompt(msg)
             if prompt:
-                send(run_claude(prompt))
+                send(run_claude(prompt, on_retry=send))
         except subprocess.TimeoutExpired:
             send(f"⚠️ Claude took longer than {TURN_TIMEOUT_S // 60} min and was cut off. Try a narrower ask.")
         except Exception as e:
