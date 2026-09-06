@@ -55,6 +55,9 @@ def read_all() -> list[dict]:
 def history(lift: str) -> None:
     rows = [r for r in read_all()
             if r["lift"] == lift.lower() and not r.get("superseded")]
+    # File order is append order — a back-dated entry would otherwise read as
+    # the newest and invert the trend. Sort chronologically.
+    rows.sort(key=lambda r: (r["date"], r.get("time") or ""))
     if not rows:
         print(f"no entries for {lift}")
         return
