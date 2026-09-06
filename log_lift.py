@@ -36,7 +36,13 @@ def parse_set(s: str) -> tuple[float, int]:
 
 
 def epley_1rm(weight: float, reps: int) -> float:
-    """Estimated 1RM. Epley; reasonable to ~10 reps, drifts high beyond that."""
+    """Estimated 1RM. Epley; reasonable to ~10 reps, drifts high beyond that.
+
+    A tested single is not an estimate — return it unchanged, or Epley
+    inflates a real 1RM by 3.3%.
+    """
+    if reps <= 1:
+        return round(weight, 1)
     return round(weight * (1 + reps / 30), 1)
 
 
