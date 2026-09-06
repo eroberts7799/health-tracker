@@ -145,6 +145,15 @@ yourself anymore; do not run `ask.py` unless he asks you to explicitly.
 5. Verify: Ethan sends "ping" from the new bot chat; a reply proves the
    whole chain (bot → claude → reply). `/status` shows the session id.
 
+**Voice notes (added 2026-09-06):** the bot transcribes Telegram voice
+messages on this box with faster-whisper (CPU, no API). One-time:
+`uv sync --extra voice` in the repo, then restart the bot. The first
+voice note downloads the `small` model (~250 MB, cached under
+`~/.cache/huggingface`) — check free disk first (`df -h ~`). If the box
+is too slow (a 10 s note taking >60 s), set `WHISPER_MODEL=base` in
+`.env` and restart. Nothing else changes; the transcript is echoed back
+to Ethan before the answer so mishears are visible.
+
 **Restart** after each `git pull` that touches `coach_bot.py` or
 `CLAUDE.md`: `pkill -f coach_bot.py` then the nohup line. The session id
 lives in `.coach_session` (gitignored) and survives restarts; `/new` in

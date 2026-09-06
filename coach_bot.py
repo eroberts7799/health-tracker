@@ -1,6 +1,6 @@
 """Claude Code over Telegram — Ethan's personal coach chat.
 
-Every text (or photo) Ethan sends is forwarded to a persistent headless
+Every text, photo, or voice note Ethan sends is forwarded to a persistent headless
 Claude Code session (`claude -p --resume <id>`) running in this repo with
 tools enabled, so it can pull Garmin, query health.db, log meals, commit,
 and read photos exactly like the terminal session on his Mac. The reply
@@ -48,6 +48,7 @@ TURN_TIMEOUT_S = 900
 API_RETRIES = 1                  # extra attempt on Anthropic-side api_error (529 etc.)
 API_RETRY_WAIT_S = 20
 ALLOWED_TOOLS = "Bash,Read,Edit,Write,Glob,Grep,WebSearch,WebFetch"
+WHISPER_MODEL = os.environ.get("WHISPER_MODEL", "small")  # tiny/base/small/medium
 STARTED_AT = time.time()
 
 _work: "queue.Queue[dict]" = queue.Queue()
@@ -77,6 +78,21 @@ def download(file_id: str, suffix: str) -> Path:
     path = INBOX / f"{datetime.now(TZ):%Y%m%d_%H%M%S}_{file_id[-8:]}{suffix}"
     path.write_bytes(data)
     return path
+
+
+# ---------------------------------------------------------------- voice
+_whisper = None
+
+
+def transcribe(path: Path) -> str:
+    """Voice note → text, on-box with faster-whisper (CPU, int8). Model loads
+    lazily on the first voice note (~250 MB download once, cached by HF)."""
+    global _whisper
+    from faster_whisper import WhisperModel  # optional dep: uv sync --extra voice
+    if _whisper is None:
+        _whisper = WhisperModel(WHISPER_MODEL, device="cpu", compute_type="int8")
+    segments, _info = _whisper.transcribe(str(path), beam_size=3, vad_filter=True)
+    return " ".join(seg.text.strip() for seg in segments).strip()
 
 
 # ---------------------------------------------------------------- claude
@@ -164,6 +180,17 @@ def message_to_prompt(msg: dict) -> str | None:
     if doc.get("mime_type", "").startswith("image/"):
         ext = Path(doc.get("file_name", "")).suffix or ".img"
         attachments.append(download(doc["file_id"], ext))
+    voice = msg.get("voice") or msg.get("audio")
+    heard = ""
+    if voice:
+        ogg = download(voice["file_id"], ".ogg")
+        try:
+            heard = transcribe(ogg)
+        except ImportError:
+            return "__notice__:🎙 Voice isn't set up on this server yet: run `uv sync --extra voice` and restart the bot."
+        if not heard:
+            return "__notice__:🎙 Couldn't make out any words in that voice note."
+        text = (text + "\n" if text else "") + f"[voice note, transcribed]: {heard}"
     if not text and not attachments:
         return None
     for p in attachments:
@@ -179,7 +206,11 @@ def worker() -> None:
         threading.Thread(target=typing_forever, args=(stop,), daemon=True).start()
         try:
             prompt = message_to_prompt(msg)
-            if prompt:
+            if prompt and prompt.startswith("__notice__:"):
+                send(prompt[len("__notice__:"):])
+            elif prompt:
+                if "[voice note, transcribed]: " in prompt:
+                    send("🎙 " + prompt.split("[voice note, transcribed]: ", 1)[1].split("\n[Photo", 1)[0])
                 send(run_claude(prompt, on_retry=send))
         except subprocess.TimeoutExpired:
             send(f"⚠️ Claude took longer than {TURN_TIMEOUT_S // 60} min and was cut off. Try a narrower ask.")
